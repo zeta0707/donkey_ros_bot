@@ -1,6 +1,6 @@
-# ROS1 Donkey
+# ROS1 Donkey(제시카)
 
-## Waveshare Donkeycar with ROS1!!
+## Waveshare Jetracer with ROS1 + Donkeycar!!
 
 > How to make it?
 
