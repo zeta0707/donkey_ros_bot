@@ -1,20 +1,14 @@
-# Donkey ROS
+# ROS1 Donkey
 
-## Donkey car with ROS!!
-
-<p align="center">
-    <img src="./Images/blob_tracking.gif" width="400" />
-    <img src="./Images/joy_control.gif" width="400" />
-</p>
-
+## Waveshare Donkeycar with ROS1!!
 
 > How to make it?
 
 There's Notion Lecture Notes and Youtube video's about this project. 
 But, It's written in Korean. Anyway, Here's the link
 
-* [Notion Lecture Notes](https://www.notion.so/ROS-for-G-Camp-410d95df137d403ca176cfec4822351a)
-* Youtube Lecture Video - **Coming Soon!!**
+* [Notion Lecture Notes] https://www.notion.so/38a82d8f3f464a22933eef95b8a29fa4
+
 
 ## Tested System information
 
