@@ -1,6 +1,7 @@
 # ROS1 Donkey(제시카)
 
 ## Waveshare Jetracer with ROS1 + Donkeycar!!
+로드밸런스팀 김수영씨 코드를 가져와서 수정해서 만들고 있습니다.
 
 > How to make it?
 
