@@ -11,6 +11,18 @@ import rospy
 from threading import Thread
 from ackermann_msgs.msg import AckermannDriveStamped
 
+def map_range(x, X_min, X_max, Y_min, Y_max):
+    '''
+    Linear mapping between two ranges of values
+    '''
+    X_range = X_max - X_min
+    Y_range = Y_max - Y_min
+    XY_ratio = X_range/Y_range
+    print(x, X_min, X_max, Y_min, Y_max)
+    print(X_range, Y_range, XY_ratio)
+    y = ((x-X_min) / XY_ratio + Y_min) // 1
+
+    return int(y)
 
 class PCA9685:
     """
@@ -19,7 +31,7 @@ class PCA9685:
     """
 
     def __init__(
-        self, channel, address=0x40, frequency=60, busnum=None, init_delay=0.1
+           self, channel, address, frequency=60, busnum=None, init_delay=0.1
     ):
 
         self.default_freq = 60
@@ -70,16 +82,72 @@ class PCA9685:
         while self.running:
             self.set_pulse(self.pulse)
 
+class PWMThrottle:
+    """
+    Wrapper over a PWM motor cotnroller to convert -1 to 1 throttle
+    values to PWM pulses.
+    """
+    MIN_THROTTLE = -1
+    MAX_THROTTLE =  1
+
+    def __init__(self, controller=None,
+                       max_pulse=4095,
+                       min_pulse=-4095,
+                       zero_pulse=0):
+
+        self.controller = controller
+        self.max_pulse = max_pulse
+        self.min_pulse = min_pulse
+        self.zero_pulse = zero_pulse
+
+        #send zero pulse to calibrate ESC
+        print("Init ESC")
+        self.controller.set_pulse(self.zero_pulse)
+        time.sleep(1)
+
+
+    def run(self, throttle):
+        print(throttle)
+        if throttle > 0:
+            #pulse = map_range(throttle,
+            #                        0, self.MAX_THROTTLE,
+            #                        self.zero_pulse, self.max_pulse)
+            pulse = int(throttle)
+            self.controller.pwm.set_pwm(self.controller.channel,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+1,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+2,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+3,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+4,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+7,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+6,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+5,0,4095)
+        else:
+            #pulse = map_range(throttle,
+            #                        self.MIN_THROTTLE, 0,
+            #                        self.min_pulse, self.zero_pulse)
+            pulse = int(throttle)
+            self.controller.pwm.set_pwm(self.controller.channel,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+2,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+1,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+3,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+4,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+7,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+5,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+6,0,4095)
+
+    def shutdown(self):
+        self.run(0) #stop vehicle
 
 class Vehicle(object):
     def __init__(self, name="donkey_ros"):
-
-        self._throttle = PCA9685(channel=0, busnum=1)
-        rospy.loginfo("Throttle Controller Awaked!!")
-
-        self._steering_servo = PCA9685(channel=1, busnum=1)
+        
+        self._steering_servo = PCA9685(channel=0, address=0x40, busnum=1)
         rospy.loginfo("Steering Controller Awaked!!")
 
+        throttle_controller = PCA9685(channel=0, address=0x60, busnum=1)
+        self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
+        rospy.loginfo("Throttle Controller Awaked!!") 
+        
         self._name = name
         self._teleop_sub = rospy.Subscriber(
             "/donkey_teleop",

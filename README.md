@@ -6,6 +6,11 @@
 
 https://github.com/Road-Balance/donkey_ros
 
+<p align="center">
+    <img src="./Images/blob_tracking.gif" width="400" />
+    <img src="./Images/joy_control.gif" width="400" />
+</p>
+
 There's Notion Lecture Notes and Youtube video's about this project. 
 But, It's written in Korean. Anyway, Here's the link
 
@@ -44,7 +49,7 @@ $ sudo apt-get install ros-melodic-cv-bridge
 $ sudo apt-get install ros-melodic-image-view
 ```
 
-2. OpenCV4 installation:
+2. OpenCV4 installation
 
 - Can be found in [JetsonHacks repo](https://github.com/JetsonHacksNano/buildOpenCV)
 
@@ -142,6 +147,10 @@ $ rosrun donkey_cv find_ball.py
 
 Control RC Car with logitech F710 game controller
 
+<p align="center">
+    <img src="./Images/joy_control.gif" width="500" />
+</p>
+
 ```bash
 $ roscore
 
@@ -158,6 +167,11 @@ $ roslaunch donkey_joy joy_teleop_btns.launch
 ### **2. blob_tracking**
 
 Find the green box of the Jetson Nano on the screen and change the direction of the wheel accordingly.
+
+
+<p align="center">
+    <img src="./Images/blob_tracking.gif" width="500" />
+</p>
 
 
 ```bash

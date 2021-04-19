@@ -13,10 +13,10 @@ teleop:
     message_value:
       -
         target: drive.speed
-        value: 370.0
+        value: 0
       -
         target: drive.steering_angle
-        value: 375.0
+        value: 320.0
 
   # Enable Human control by holding Left Bumper
   human_control:
@@ -28,13 +28,13 @@ teleop:
       -
         axis: 1
         target: drive.speed
-        scale: 40.0                   # joystick will command plus or minus 2 meters / second
-        offset: 380.0
+        scale: 1024.0                   # joystick will command plus or minus 2 meters / second
+        offset: 0
       -
-        axis: 2
+        axis: 0
         target: drive.steering_angle
-        scale: 78.0                  # joystick will command plus or minus ~20 degrees steering angle
-        offset: 375.0
+        scale: 50.0                  # joystick will command plus or minus ~20 degrees steering angle
+        offset: 320
 
   # Enable autonomous control by pressing right bumper
   # This switch causes the joy_teleop to stop sending messages to input/teleop
