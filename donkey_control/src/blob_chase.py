@@ -16,6 +16,18 @@ import rospy
 from geometry_msgs.msg import Twist
 import time
 
+def map_range(x, X_min, X_max, Y_min, Y_max):
+    '''
+    Linear mapping between two ranges of values
+    '''
+    X_range = X_max - X_min
+    Y_range = Y_max - Y_min
+    XY_ratio = X_range/Y_range
+    #print(x, X_min, X_max, Y_min, Y_max)
+    y = ((x-X_min) / XY_ratio + Y_min) // 1
+    #print(X_range, Y_range, XY_ratio, y)
+    return int(y)
+
 class PCA9685:
     """
     PWM motor controler using PCA9685 boards.
@@ -45,8 +57,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        self.pulse = 340
-        self.prev_pulse = 340
+        #self.pulse = 340
+        #self.prev_pulse = 340
         self.running = True
 
     def set_pwm(self, pulse):
@@ -56,16 +68,16 @@ class PCA9685:
             self.pwm.set_pwm(self.channel, 0, int(pulse * self.pwm_scale))
 
     def run(self, pulse):
-        pulse_diff = pulse - self.prev_pulse
+        #pulse_diff = pulse - self.prev_pulse
 
-        if abs(pulse_diff) > 40:
-            if pulse_diff > 0:
-                pulse += 0.7 * pulse_diff
-            else:
-                pulse -= 0.7 * pulse_diff
+        #if abs(pulse_diff) > 40:
+        #    if pulse_diff > 0:
+        #        pulse += 0.7 * pulse_diff
+        #    else:
+        #        pulse -= 0.7 * pulse_diff
 
         self.set_pwm(pulse)
-        self.prev_pulse = pulse
+        #self.prev_pulse = pulse
 
     def set_pulse(self, pulse):
         self.pulse = pulse
@@ -73,6 +85,62 @@ class PCA9685:
     def update(self):
         while self.running:
             self.set_pulse(self.pulse)
+
+class PWMThrottle:
+    """
+    Wrapper over a PWM motor cotnroller to convert -1 to 1 throttle
+    values to PWM pulses.
+    """
+    MIN_THROTTLE = -1
+    MAX_THROTTLE =  1
+
+    def __init__(self, controller=None,
+                       max_pulse=4095,
+                       min_pulse=-4095,
+                       zero_pulse=0):
+
+        self.controller = controller
+        self.max_pulse = max_pulse
+        self.min_pulse = min_pulse
+        self.zero_pulse = zero_pulse
+
+        #send zero pulse to calibrate ESC
+        print("Init ESC")
+        self.controller.set_pulse(self.zero_pulse)
+        time.sleep(1)
+
+
+    def run(self, throttle):
+        
+        if throttle > 0:
+            #pulse = map_range(throttle,
+            #                        0, self.MAX_THROTTLE,
+            #                        self.zero_pulse, self.max_pulse)
+	    pulse = throttle
+            self.controller.pwm.set_pwm(self.controller.channel,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+1,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+2,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+3,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+4,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+7,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+6,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+5,0,4095)
+        else:
+            #pulse = map_range(throttle,
+            #                        self.MIN_THROTTLE, 0,
+            #                        self.min_pulse, self.zero_pulse)
+            pulse = throttle
+            self.controller.pwm.set_pwm(self.controller.channel,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+2,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+1,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+3,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+4,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+7,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+5,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+6,0,4095)
+
+    def shutdown(self):
+        self.run(0) #stop vehicle
 
 class ServoConvert:
     def __init__(self, id=1, center_value=370, range=90, direction=1):
@@ -110,18 +178,21 @@ class DkLowLevelCtrl:
         # --- Initialize the node
         rospy.init_node("blob_chase_node")
 
-        self._throttle = PCA9685(channel=0, busnum=1)
+        #waveshare throttle is channel 0 on 0x60
+        throttle_controller = PCA9685(channel=0, address=0x60, busnum=1)
+        self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
         rospy.loginfo("Throttle Controler Awaked!!")
-
-        self._steering_servo = PCA9685(channel=1, busnum=1)
+        
+        #waveshare steering is channel 0 on 0x40
+        self._steering_servo = PCA9685(channel=0, address=0x40, busnum=1)
         rospy.loginfo("Steering Controler Awaked!!")
 
         self.actuators = {}
         self.actuators["throttle"] = ServoConvert(
-            id=1, center_value=350, range=80
+            id=1, center_value=0, range=8192, direction=1
         )
         self.actuators["steering"] = ServoConvert(
-            id=2, center_value=375, range=80, direction=1
+            id=2, center_value=370, range=80, direction=1
         )  # -- positive left
         rospy.loginfo("> Actuators corrrectly initialized")
 
@@ -143,8 +214,8 @@ class DkLowLevelCtrl:
         )
         rospy.loginfo("> Subscriber corrrectly initialized")
 
-        self.throttle_cmd = 0.0
-        self.throttle_chase = 1.0
+        self.throttle_cmd = 1.0
+        self.throttle_chase = 0.0
         self.steer_cmd = 0.0
         self.steer_chase = 0.0
 
@@ -175,10 +246,9 @@ class DkLowLevelCtrl:
         # -- Add steering
         self.steer = saturate(self.steer_cmd + self.steer_chase, -1, 1)
 
-        self._debud_command_msg.linear.x = self.throttle
-        self._debud_command_msg.angular.z = self.steer
-
-        self.ros_pub_debug_command.publish(self._debud_command_msg)
+        #self._debud_command_msg.linear.x = self.throttle
+        #self._debud_command_msg.angular.z = self.steer
+        #self.ros_pub_debug_command.publish(self._debud_command_msg)
 
         self.set_actuators_from_cmdvel(self.throttle, self.steer)
 
@@ -208,7 +278,7 @@ class DkLowLevelCtrl:
         self.steer_cmd = 0.0
 
     def reset_avoid(self):
-        self.throttle_chase = 1.0
+        self.throttle_chase = 0.0
         self.steer_avoid = 0.0
 
     @property

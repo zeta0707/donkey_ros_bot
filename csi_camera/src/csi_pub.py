@@ -34,8 +34,8 @@ def gstreamer_pipeline(
         )
     )
 
-
-cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=2), cv2.CAP_GSTREAMER)
+#for Waveshare jetracer csi camera orientation
+cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
 
 rospy.init_node("csi_pub", anonymous=True)
 image_pub = rospy.Publisher("csi_image", Image, queue_size=1)

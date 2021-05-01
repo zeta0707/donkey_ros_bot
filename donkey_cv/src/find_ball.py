@@ -128,8 +128,13 @@ def main(args):
     # blue_min = (82,31,62)
     # blue_max = (106, 116, 193)     
     # blue_min = (55,40,0)
-    # blue_max = (150, 255, 255)     
-    
+    # blue_max = (150, 255, 255)  
+
+    # white, light blue filter   
+    # white_min = (16, 0, 66)
+    # whilte_max = (133, 251, 255)
+    # lblue_min = (59, 45, 112)
+    # lbue_max = (100, 255, 255)   
     pink_min = (135, 41, 95)
     pink_max = (255, 196, 255)
 
@@ -144,7 +149,7 @@ def main(args):
     x_min   = 0.1
     x_max   = 0.9
     y_min   = 0.1
-    y_max   = 0.9
+    y_max   = 1.0
     
     detection_window = [x_min, y_min, x_max, y_max]
     
@@ -161,7 +166,7 @@ def main(args):
      
     # Filter by Circularity
     params.filterByCircularity = True
-    params.minCircularity = 0.1
+    params.minCircularity = 0.4
      
     # Filter by Convexity
     params.filterByConvexity = True
@@ -169,10 +174,10 @@ def main(args):
      
     # Filter by Inertia
     params.filterByInertia = True
-    params.minInertiaRatio = 0.7   
+    params.minInertiaRatio = 0.5   
 
     rospy.init_node('blob_detector', anonymous=True)
-    ic = BlobDetector(green_min, green_max, blur, params, detection_window)
+    ic = BlobDetector(pink_min, pink_max, blur, params, detection_window)
     try:
         rospy.spin()
     except KeyboardInterrupt:
