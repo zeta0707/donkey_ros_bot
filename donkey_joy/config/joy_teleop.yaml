@@ -16,25 +16,25 @@ teleop:
         value: 0
       -
         target: drive.steering_angle
-        value: 320.0
+        value: 370.0
 
   # Enable Human control by holding Left Bumper
   human_control:
     type: topic
     message_type: ackermann_msgs/AckermannDriveStamped
     topic_name: donkey_teleop
-    deadman_buttons: [4]
+    deadman_buttons: [6]
     axis_mappings:
-      -
-        axis: 1
-        target: drive.speed
-        scale: 1024.0                   # joystick will command plus or minus 2 meters / second
-        offset: 0
       -
         axis: 0
         target: drive.steering_angle
-        scale: 50.0                  # joystick will command plus or minus ~20 degrees steering angle
-        offset: 320
+        scale: 65.0                  # joystick will command plus or minus ~20 degrees steering angle
+        offset: 370.0
+      -
+        axis: 1
+        target: drive.speed
+        scale: 4095.0                   # joystick will command plus or minus 2 meters / second
+        offset: 0
 
   # Enable autonomous control by pressing right bumper
   # This switch causes the joy_teleop to stop sending messages to input/teleop
