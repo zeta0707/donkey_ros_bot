@@ -106,7 +106,6 @@ class PWMThrottle:
 
 
     def run(self, throttle):
-        print(throttle)
         if throttle > 0:
             #pulse = map_range(throttle,
             #                        0, self.MAX_THROTTLE,
