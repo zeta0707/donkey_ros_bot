@@ -16,7 +16,7 @@ teleop:
         value: 0
       -
         target: drive.steering_angle
-        value: 370.0
+        value: 0.0
 
   # Enable Human control by holding Left Bumper
   human_control:
@@ -28,8 +28,8 @@ teleop:
       -
         axis: 0
         target: drive.steering_angle
-        scale: 65.0                  # joystick will command plus or minus ~20 degrees steering angle
-        offset: 370.0
+        scale: 1.0                  # joystick will command plus or minus ~20 degrees steering angle
+        offset: 0.0
       -
         axis: 1
         target: drive.speed

@@ -52,8 +52,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        self.pulse = 340
-        self.prev_pulse = 340
+        self.pulse = 0
+        self.prev_pulse = 0
         self.running = True
 
     def set_pwm(self, pulse):
@@ -111,38 +111,47 @@ class PWMThrottle:
             #                        0, self.MAX_THROTTLE,
             #                        self.zero_pulse, self.max_pulse)
             pulse = int(throttle)
-            self.controller.pwm.set_pwm(self.controller.channel,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+1,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+2,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+3,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+4,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+7,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+6,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+5,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0) 
+            self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 3,0,4095)
+
+            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+11,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 7,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 8,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 9,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+10,0,0)
         else:
             #pulse = map_range(throttle,
             #                        self.MIN_THROTTLE, 0,
             #                        self.min_pulse, self.zero_pulse)
             pulse = int(throttle)
-            self.controller.pwm.set_pwm(self.controller.channel,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+2,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+1,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+3,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+4,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+7,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+5,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+6,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 1,0,0) 
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
 
+            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,-pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+11,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 8,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 7,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+10,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 9,0,0)
     def shutdown(self):
         self.run(0) #stop vehicle
 
 class Vehicle(object):
     def __init__(self, name="donkey_ros"):
         
-        self._steering_servo = PCA9685(channel=0, address=0x40, busnum=1)
+        self._steering_servo = PCA9685(channel=15, address=0x40, busnum=1)
         rospy.loginfo("Steering Controller Awaked!!")
 
-        throttle_controller = PCA9685(channel=0, address=0x60, busnum=1)
+        throttle_controller = PCA9685(channel=0, address=0x40, busnum=1)
         self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
         rospy.loginfo("Throttle Controller Awaked!!") 
         
