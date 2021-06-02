@@ -35,7 +35,7 @@ class PCA9685:
     """
 
     def __init__(
-        self, channel, address=0x40, frequency=60, busnum=None, init_delay=0.1
+           self, channel, address, frequency=60, busnum=None, init_delay=0.1
     ):
 
         self.default_freq = 60
@@ -57,8 +57,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        #self.pulse = 340
-        #self.prev_pulse = 340
+        self.pulse = 0
+        self.prev_pulse = 0
         self.running = True
 
     def set_pwm(self, pulse):
@@ -116,29 +116,38 @@ class PWMThrottle:
             #pulse = map_range(throttle,
             #                        0, self.MAX_THROTTLE,
             #                        self.zero_pulse, self.max_pulse)
-	    pulse = throttle
-            self.controller.pwm.set_pwm(self.controller.channel,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+1,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+2,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+3,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+4,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+7,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+6,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+5,0,4095)
+            pulse = int(throttle)
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0) 
+            self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 3,0,4095)
+
+            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+11,0,pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 7,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 8,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 9,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+10,0,0)
         else:
             #pulse = map_range(throttle,
             #                        self.MIN_THROTTLE, 0,
             #                        self.min_pulse, self.zero_pulse)
-            pulse = throttle
-            self.controller.pwm.set_pwm(self.controller.channel,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+2,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+1,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+3,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+4,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+7,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+5,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+6,0,4095)
+            pulse = int(throttle)
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 1,0,0) 
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
 
+            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,-pulse)
+	    self.controller.pwm.set_pwm(self.controller.channel+11,0,-pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 8,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 7,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+10,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 9,0,0)
     def shutdown(self):
         self.run(0) #stop vehicle
 
@@ -179,12 +188,12 @@ class DkLowLevelCtrl:
         rospy.init_node("blob_chase_node")
 
         #waveshare throttle is channel 0 on 0x60
-        throttle_controller = PCA9685(channel=0, address=0x60, busnum=1)
+        throttle_controller = PCA9685(channel=0, address=0x40, busnum=1)
         self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
         rospy.loginfo("Throttle Controler Awaked!!")
         
         #waveshare steering is channel 0 on 0x40
-        self._steering_servo = PCA9685(channel=0, address=0x40, busnum=1)
+        self._steering_servo = PCA9685(channel=15, address=0x40, busnum=1)
         rospy.loginfo("Steering Controler Awaked!!")
 
         self.actuators = {}
@@ -192,7 +201,7 @@ class DkLowLevelCtrl:
             id=1, center_value=0, range=8192, direction=1
         )
         self.actuators["steering"] = ServoConvert(
-            id=2, center_value=370, range=80, direction=1
+            id=2, center_value=0, range=2, direction=1
         )  # -- positive left
         rospy.loginfo("> Actuators corrrectly initialized")
 

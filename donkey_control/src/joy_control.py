@@ -63,16 +63,16 @@ class PCA9685:
             self.pwm.set_pwm(self.channel, 0, int(pulse * self.pwm_scale))
 
     def run(self, pulse):
-        pulse_diff = pulse - self.prev_pulse
+        #pulse_diff = pulse - self.prev_pulse
 
-        if abs(pulse_diff) > 40:
-            if pulse_diff > 0:
-                pulse += 0.7 * pulse_diff
-            else:
-                pulse -= 0.7 * pulse_diff
+        #if abs(pulse_diff) > 40:
+        #    if pulse_diff > 0:
+        #        pulse += 0.7 * pulse_diff
+        #    else:
+        #        pulse -= 0.7 * pulse_diff
 
         self.set_pwm(pulse)
-        self.prev_pulse = pulse
+        #self.prev_pulse = pulse
 
     def set_pulse(self, pulse):
         self.pulse = pulse

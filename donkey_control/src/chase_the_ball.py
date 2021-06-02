@@ -72,8 +72,8 @@ class ChaseBall:
             steer_action = -K_LAT_DIST_TO_STEER * self.blob_x
             steer_action = saturate(steer_action, -1.5, 1.5)
             rospy.loginfo("Steering command %.2f" % steer_action)
-            #if object is detected, go forward with 20% power
-	    throttle_action = 0.2
+            #if object is detected, go forward with 40% power
+	    throttle_action = 0.4
 
         return (steer_action, throttle_action)
 
