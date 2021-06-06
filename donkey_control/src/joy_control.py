@@ -11,17 +11,6 @@ import rospy
 from threading import Thread
 from ackermann_msgs.msg import AckermannDriveStamped
 
-def map_range(x, X_min, X_max, Y_min, Y_max):
-    '''
-    Linear mapping between two ranges of values
-    '''
-    X_range = X_max - X_min
-    Y_range = Y_max - Y_min
-    XY_ratio = X_range/Y_range
-    #print(x, X_min, X_max, Y_min, Y_max)
-    y = ((x-X_min) / XY_ratio + Y_min) // 1
-    #print(X_range, Y_range, XY_ratio, y)
-    return int(y)
 
 class PCA9685:
     """
@@ -63,16 +52,7 @@ class PCA9685:
             self.pwm.set_pwm(self.channel, 0, int(pulse * self.pwm_scale))
 
     def run(self, pulse):
-        #pulse_diff = pulse - self.prev_pulse
-
-        #if abs(pulse_diff) > 40:
-        #    if pulse_diff > 0:
-        #        pulse += 0.7 * pulse_diff
-        #    else:
-        #        pulse -= 0.7 * pulse_diff
-
         self.set_pwm(pulse)
-        #self.prev_pulse = pulse
 
     def set_pulse(self, pulse):
         self.pulse = pulse
@@ -105,51 +85,62 @@ class PWMThrottle:
         time.sleep(1)
 
 
-    def run(self, throttle):
-        if throttle > 0:
-            #pulse = map_range(throttle,
-            #                        0, self.MAX_THROTTLE,
-            #                        self.zero_pulse, self.max_pulse)
-            pulse = int(throttle)
-            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,pulse)
-	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0) 
-            self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
+    def run(self, throttle, steering):
+        left_motor_speed = throttle
+        right_motor_speed = throttle
+
+        if steering < 0:
+            left_motor_speed *= (1.0 - (-steering/4095))
+        elif steering > 0:
+            right_motor_speed *= (1.0 - steering/4095)
+        
+        if left_motor_speed > 0:
+            left_pulse = int(left_motor_speed)
+	    #rear motor
+  	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,4095)
-
-            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,pulse)
-	    self.controller.pwm.set_pwm(self.controller.channel+11,0,pulse)
+            #front motor
+            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 7,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+ 8,0,0)
+        else:
+            left_pulse = int(left_motor_speed)
+	    #rear motor
+  	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
+            #front motor
+            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,-left_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 8,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 7,0,0)
+
+        if right_motor_speed > 0:
+            right_pulse = int(right_motor_speed)
+            #rear motor
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,right_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0) 
+            self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
+            #front motor
+	    self.controller.pwm.set_pwm(self.controller.channel+11,0,right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+10,0,0)
         else:
-            #pulse = map_range(throttle,
-            #                        self.MIN_THROTTLE, 0,
-            #                        self.min_pulse, self.zero_pulse)
-            pulse = int(throttle)
-            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-pulse)
-	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-pulse)
+            right_pulse = int(right_motor_speed)
+            #rear motor
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,0) 
             self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
-
-            self.controller.pwm.set_pwm(self.controller.channel+ 6,0,-pulse)
-	    self.controller.pwm.set_pwm(self.controller.channel+11,0,-pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+ 8,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+ 7,0,0)
+            #front motor
+	    self.controller.pwm.set_pwm(self.controller.channel+11,0,-right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+10,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,0)
+
     def shutdown(self):
         self.run(0) #stop vehicle
 
 class Vehicle(object):
-    def __init__(self, name="donkey_ros"):
-        
-        self._steering_servo = PCA9685(channel=15, address=0x40, busnum=1)
-        rospy.loginfo("Steering Controller Awaked!!")
+    def __init__(self, name="donkey_ros"):       
 
         throttle_controller = PCA9685(channel=0, address=0x40, busnum=1)
         self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
@@ -177,8 +168,7 @@ class Vehicle(object):
             + str(steering_pulse)
         )
 
-        self._throttle.run(speed_pulse)
-        self._steering_servo.run(steering_pulse)
+        self._throttle.run(speed_pulse,steering_pulse)
 
 
 if __name__ == "__main__":
