@@ -16,17 +16,6 @@ import rospy
 from geometry_msgs.msg import Twist
 import time
 
-def map_range(x, X_min, X_max, Y_min, Y_max):
-    '''
-    Linear mapping between two ranges of values
-    '''
-    X_range = X_max - X_min
-    Y_range = Y_max - Y_min
-    XY_ratio = X_range/Y_range
-    #print(x, X_min, X_max, Y_min, Y_max)
-    y = ((x-X_min) / XY_ratio + Y_min) // 1
-    #print(X_range, Y_range, XY_ratio, y)
-    return int(y)
 
 class PCA9685:
     """
@@ -57,8 +46,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        #self.pulse = 340
-        #self.prev_pulse = 340
+        self.pulse = 370
+        self.prev_pulse = 370
         self.running = True
 
     def set_pwm(self, pulse):
@@ -68,16 +57,16 @@ class PCA9685:
             self.pwm.set_pwm(self.channel, 0, int(pulse * self.pwm_scale))
 
     def run(self, pulse):
-        #pulse_diff = pulse - self.prev_pulse
+        pulse_diff = pulse - self.prev_pulse
 
-        #if abs(pulse_diff) > 40:
-        #    if pulse_diff > 0:
-        #        pulse += 0.7 * pulse_diff
-        #    else:
-        #        pulse -= 0.7 * pulse_diff
+        if abs(pulse_diff) > 40:
+            if pulse_diff > 0:
+                pulse += 0.7 * pulse_diff
+           else:
+                pulse -= 0.7 * pulse_diff
 
         self.set_pwm(pulse)
-        #self.prev_pulse = pulse
+        self.prev_pulse = pulse
 
     def set_pulse(self, pulse):
         self.pulse = pulse
@@ -143,7 +132,7 @@ class PWMThrottle:
         self.run(0) #stop vehicle
 
 class ServoConvert:
-    def __init__(self, id=1, center_value=370, range=90, direction=1):
+    def __init__(self, id=1, center_value=370, range=110, direction=1):
         self.value = 0.0
         self.value_out = center_value
         self._center = center_value
@@ -192,7 +181,7 @@ class DkLowLevelCtrl:
             id=1, center_value=0, range=8192, direction=1
         )
         self.actuators["steering"] = ServoConvert(
-            id=2, center_value=370, range=80, direction=1
+            id=2, center_value=370, range=110, direction=1
         )  # -- positive left
         rospy.loginfo("> Actuators corrrectly initialized")
 
@@ -215,9 +204,9 @@ class DkLowLevelCtrl:
         rospy.loginfo("> Subscriber corrrectly initialized")
 
         self.throttle_cmd = 1.0
-        self.throttle_chase = 0.0
+        self.throttle_chase = 1.0
         self.steer_cmd = 0.0
-        self.steer_chase = 0.0
+        self.steer_chase = 1.0
 
         self._debud_command_msg = Twist()
 

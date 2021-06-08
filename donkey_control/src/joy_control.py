@@ -11,17 +11,6 @@ import rospy
 from threading import Thread
 from ackermann_msgs.msg import AckermannDriveStamped
 
-def map_range(x, X_min, X_max, Y_min, Y_max):
-    '''
-    Linear mapping between two ranges of values
-    '''
-    X_range = X_max - X_min
-    Y_range = Y_max - Y_min
-    XY_ratio = X_range/Y_range
-    #print(x, X_min, X_max, Y_min, Y_max)
-    y = ((x-X_min) / XY_ratio + Y_min) // 1
-    #print(X_range, Y_range, XY_ratio, y)
-    return int(y)
 
 class PCA9685:
     """
@@ -52,8 +41,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        self.pulse = 340
-        self.prev_pulse = 340
+        self.pulse = 370
+        self.prev_pulse = 370
         self.running = True
 
     def set_pwm(self, pulse):
