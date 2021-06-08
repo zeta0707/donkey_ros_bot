@@ -239,6 +239,7 @@ class DkLowLevelCtrl:
 
     def compose_command_velocity(self):
         self.throttle = saturate(self.throttle_cmd * self.throttle_chase, -1, 1)
+
         # -- Add steering
         self.steer = saturate(self.steer_cmd + self.steer_chase, -1, 1)
 
