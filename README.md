@@ -1,6 +1,6 @@
 # ROS1 Donkey(제시카 DC)
 
-## 4 DC motors with ROS1 + Donkeycar!!
+## 4 DC motors with ROS Molodic + Donkeycar!!
 
 로드밸런스팀 김수영씨 아래 코드를 가져와서 수정해서 만들고 있습니다.
 
