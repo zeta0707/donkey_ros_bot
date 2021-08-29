@@ -19,7 +19,7 @@ from darknet_ros_msgs.msg import BoundingBoxes
 from rospy.topics import Message
 
 K_LAT_DIST_TO_STEER = -2.0
-K_LAT_DIST_TO_THROTTLE = 0.2
+K_LAT_DIST_TO_THROTTLE = 0.4
 
 #global variable for keeping this value to next traffic signal
 throttle_action = 0.0

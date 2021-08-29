@@ -131,8 +131,8 @@ def main(args):
     # blue_max = (150, 255, 255)  
 
     # white, light blue filter   
-    # white_min = (16, 0, 66)
-    # white_max = (133, 251, 255)
+    white_min = (16, 0, 66)
+    white_max = (133, 251, 255)
     # lblue_min = (59, 45, 112)
     # lbue_max = (100, 255, 255)   
     pink_min = (135, 41, 95)
