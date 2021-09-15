@@ -156,7 +156,10 @@ class Vehicle(object):
         rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.linear.x, msg.linear.y, msg.linear.z))
         rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.angular.x, msg.angular.y, msg.angular.z))
 
+        # Do velocity processing here:
+        # Use the kinematics of your robot to map linear and angular velocities into motor commands
         speed_pulse += msg.linear.x*SPEED_STEP
+
         if speed_pulse > 4095 :
            speed_pulse = 4095
         if speed_pulse < -4095 :

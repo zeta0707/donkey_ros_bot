@@ -19,7 +19,7 @@ import time
 
 class PCA9685:
     """
-    PWM motor controler using PCA9685 boards.
+    PWM motor controller using PCA9685 boards.
     This is used for most RC Cars
     """
 
@@ -68,7 +68,7 @@ class PCA9685:
 
 class PWMThrottle:
     """
-    Wrapper over a PWM motor cotnroller to convert -1 to 1 throttle
+    Wrapper over a PWM motor cotroller to convert -1 to 1 throttle
     values to PWM pulses.
     """
     MIN_THROTTLE = -1
@@ -124,7 +124,7 @@ class PWMThrottle:
         self.run(0) #stop vehicle
 
 class ServoConvert:
-    def __init__(self, id=1, center_value=0, range=8192, direction=1):
+    def __init__(self, id=1, center_value=0, range=8190, direction=1):
         self.value = 0.0
         self.value_out = center_value
         self._center = center_value
@@ -165,10 +165,10 @@ class DkLowLevelCtrl:
 
         self.actuators = {}
         self.actuators["throttle"] = ServoConvert(
-            id=1, center_value=0, range=8192, direction=1
+            id=1, center_value=0, range=8190, direction=1
         )
         self.actuators["steering"] = ServoConvert(
-            id=2, center_value=0, range=8192, direction=1
+            id=2, center_value=0, range=8190, direction=1
         )  # -- positive left
         rospy.loginfo("> Actuators corrrectly initialized")
 

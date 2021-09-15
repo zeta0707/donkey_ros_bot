@@ -1,6 +1,6 @@
-# ROS1 Donkey(제시카 DC)
+# ROS1 Donkey(제시카 Bot)
 
-## 4 DC motors with ROS Molodic + Donkeycar!!
+## Waveshare Jetbot with ROS Molodic + Donkeycar!!
 
 로드밸런스팀 김수영씨 아래 코드를 가져와서 수정해서 만들고 있습니다.
 
@@ -19,7 +19,7 @@ But, It's written in Korean. Anyway, Here's the link
 
 ## Tested System information
 
-**Jetson Nano 2GB + Pi Camera V2.1**
+**Jetson Nano 4GB + IMX219 160**
 
 * Ubuntu 18.04
 * ROS Melodic
@@ -73,7 +73,7 @@ Packages for Image Streaming
 
 ```bash
 gst-launch-1.0 nvarguscamerasrc sensor_id=0 ! \
-   'video/x-raw(memory:NVMM),width=1280, height=720, framerate=21/1, format=NV12' ! \
+   'video/x-raw(memory:NVMM),width=3280, height=2464, framerate=21/1, format=NV12' ! \
    nvvidconv flip-method=2 ! 'video/x-raw,width=960, height=720' ! \
    nvvidconv ! nvegltransform ! nveglglessink -e
 ```
