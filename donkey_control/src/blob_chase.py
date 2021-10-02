@@ -48,8 +48,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        self.pulse = 0
-        self.prev_pulse = 0
+        self.pulse = STEER_CENTER
+        self.prev_pulse = STEER_CENTER
         self.running = True
 
     def set_pwm(self, pulse):
